@@ -1,0 +1,17 @@
+{
+    "name": "Xam",
+    "references": [
+        "GUID:4307f53044263cf4b835bd812fc161a4",
+        "GUID:d60799ab2a985554ea1a39cd38695018",
+        "GUID:46f554ec6fef5a64585289b98cefe93e"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

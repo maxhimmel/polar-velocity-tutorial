@@ -1,0 +1,16 @@
+{
+  "name": "com.xam.xam-framework",
+  "version": "0.1.0",
+  "displayName": "Xam Framework",
+  "description": "A framework intended for quickly prototyping jam games!",
+  "unity": "2019.2",
+  "keywords": [
+    "xam",
+    "framework",
+    "jam"
+  ],
+  "author": {
+    "name": "Max Himmel",
+    "url": "https://www.linkedin.com/in/maxhimmel/"
+  }
+}
