@@ -20,13 +20,16 @@ namespace Moonshot.Gameplay
 		private Rewired.Player m_input = null;
 
 		private Rigidbody2D m_rigidbody = null;
-		private Vector2 m_velocity = Vector2.zero;
+		private Vector2 m_localVelocity = Vector2.zero;
 		private Vector2 m_desiredVelocity = Vector2.zero;
 		private bool m_isJumpDesired = false;
 
 		private void Update()
 		{
 			Vector2 moveInput = GetMoveInput();
+
+			Debug.DrawRay( m_rigidbody.position, moveInput, Color.magenta, 0.1f );
+
 			SetDesiredVelocity( moveInput );
 
 			if ( m_input.GetButtonDown( Action.Jump ) )
@@ -62,32 +65,37 @@ namespace Moonshot.Gameplay
 		private void FixedUpdate()
 		{
 			// UPDATE STATE ...
-			m_velocity = m_rigidbody.velocity;
+			m_localVelocity = m_rigidbody.velocity - m_orbitTarget.velocity;
 
 			Vector2 gravityNormal = GetGravityNormal();
 			Vector2 gravityTangent = Quaternion.Euler( 0, 0, -90 ) * gravityNormal;
 
+			Debug.DrawRay( m_rigidbody.position, gravityNormal, Color.blue, 0.1f );
+			Debug.DrawRay( m_rigidbody.position, gravityTangent, Color.green, 0.1f );
+
 			// ACCELERATE ...
-			float speedDelta = m_acceleration* Time.deltaTime;
+			float speedDelta = m_acceleration * Time.deltaTime;
 
-			Vector2 relativeVelocity = m_velocity - m_orbitTarget.velocity;
+			//Vector2 relativeVelocity = m_velocity - m_orbitTarget.velocity;
 
-			float linearSpeed = Vector2.Dot( relativeVelocity, gravityTangent );
-			float targetLinear = Vector2.Dot( m_desiredVelocity, gravityTangent );
-			float newLinearSpeed = Mathf.MoveTowards( linearSpeed, targetLinear, speedDelta );
-			
-			m_velocity += gravityTangent * (newLinearSpeed - linearSpeed);
+			//float angularSpeed = Vector2.Dot( relativeVelocity, gravityTangent );
+			float angularSpeed = Vector2.Dot( m_localVelocity, gravityTangent );
+			float targetAngularSpeed = Vector2.Dot( m_desiredVelocity, gravityTangent );
+			float newLinearSpeed = Mathf.MoveTowards( angularSpeed, targetAngularSpeed, speedDelta );
 
 
-			//float fallSpeed = Vector2.Dot( relativeVelocity, gravityNormal );
+			m_localVelocity += gravityTangent * (newLinearSpeed - angularSpeed);
+
+
+			//float fallSpeed = Mathf.Max( 0, Vector2.Dot( m_localVelocity, gravityNormal ) );
 			//float orbitFallSpeed = Vector2.Dot( m_orbitTarget.velocity, gravityNormal );
 			//float newFallSpeed = Mathf.MoveTowards( fallSpeed, orbitFallSpeed, m_gravityForce * Time.deltaTime );
 
-			////m_velocity -= gravityNormal * fallSpeed;
-			//m_velocity += gravityNormal * (newFallSpeed - fallSpeed);
+			////m_localVelocity -= gravityNormal * fallSpeed;
+			//m_localVelocity += gravityNormal * (newFallSpeed - fallSpeed);
 
 
-			LOGGING();
+			//LOGGING();
 
 
 			// JUMP ...
@@ -98,12 +106,18 @@ namespace Moonshot.Gameplay
 
 			// GRAVITY ...
 			//m_velocity.y -= m_gravityForce * Time.deltaTime;
-			m_velocity -= gravityNormal * m_gravityForce * Time.deltaTime;
+			m_localVelocity -= gravityNormal * m_gravityForce * Time.deltaTime;
 
 
 			// APPLY MOVEMENT ...
-			m_rigidbody.velocity = m_velocity;
+			m_rigidbody.velocity = m_localVelocity + m_orbitTarget.velocity;
+
+
+
+			m_relativeVelocity = m_rigidbody.velocity - m_orbitTarget.velocity;
 		}
+
+		private Vector2 m_relativeVelocity = Vector2.zero;
 
 		private void LOGGING()
 		{
@@ -126,7 +140,7 @@ namespace Moonshot.Gameplay
 		private void Jump()
 		{
 			m_isJumpDesired = false;
-			m_velocity += GetGravityNormal() * GetJumpForce();
+			m_localVelocity += GetGravityNormal() * GetJumpForce();
 		}
 
 		private float GetJumpForce()
